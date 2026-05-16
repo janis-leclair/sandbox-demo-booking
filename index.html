@@ -231,32 +231,41 @@
     </div>
 
     <div class="card-body" id="formWrapper">
-      <form id="bookingForm" onsubmit="handleSubmit(event)">
+      <!-- FormSubmit.co: no account needed, first submission triggers verification email to Rob -->
+      <form id="bookingForm"
+            action="https://formsubmit.co/rob@sandboxgtm.com"
+            method="POST">
+
+        <!-- FormSubmit configuration -->
+        <input type="hidden" name="_subject" value="New Demo Request — Sandbox" />
+        <input type="hidden" name="_next" value="https://janis-leclair.github.io/sandbox-demo-booking/?booked=1" />
+        <input type="hidden" name="_captcha" value="false" />
+        <input type="hidden" name="_template" value="table" />
 
         <div class="row-2">
           <div class="form-group">
             <label for="firstName">First name <span class="req">*</span></label>
-            <input type="text" id="firstName" placeholder="Alex" required autocomplete="given-name" />
+            <input type="text" id="firstName" name="first_name" placeholder="Alex" required autocomplete="given-name" />
           </div>
           <div class="form-group">
             <label for="lastName">Last name</label>
-            <input type="text" id="lastName" placeholder="Johnson" autocomplete="family-name" />
+            <input type="text" id="lastName" name="last_name" placeholder="Johnson" autocomplete="family-name" />
           </div>
         </div>
 
         <div class="form-group">
           <label for="email">Work email <span class="req">*</span></label>
-          <input type="email" id="email" placeholder="alex@youragency.com" required autocomplete="email" />
+          <input type="email" id="email" name="email" placeholder="alex@youragency.com" required autocomplete="email" />
         </div>
 
         <div class="form-group">
           <label for="company">Company name <span class="req">*</span></label>
-          <input type="text" id="company" placeholder="Your Agency, LLC" required autocomplete="organization" />
+          <input type="text" id="company" name="company_name" placeholder="Your Agency, LLC" required autocomplete="organization" />
         </div>
 
         <div class="form-group">
           <label for="timeSlot">When works best? <span class="req">*</span></label>
-          <select id="timeSlot" required>
+          <select id="timeSlot" name="preferred_time" required>
             <option value="" disabled selected>Select a time preference…</option>
             <option value="Mon-morning">Monday morning (9–11am PT)</option>
             <option value="Mon-afternoon">Monday afternoon (1–4pm PT)</option>
@@ -273,7 +282,7 @@
 
         <div class="form-group">
           <label for="context">Anything you'd like Rob to know? <span style="font-weight:400;color:#9CA3AF;">(optional)</span></label>
-          <textarea id="context" placeholder="e.g. We run a 6-person agency and manage outreach manually out of spreadsheets…"></textarea>
+          <textarea id="context" name="additional_context" placeholder="e.g. We run a 6-person agency and manage outreach manually out of spreadsheets…"></textarea>
         </div>
 
         <button type="submit" class="submit-btn" id="submitBtn">
@@ -294,9 +303,9 @@
         </svg>
       </div>
       <h2>Request sent.</h2>
-      <p>Your email client opened with a pre-filled request to Rob. Hit Send — he'll confirm your time within 2 hours.</p>
+      <p>Rob received your demo request and will confirm your time slot within 2 hours. Check your inbox for a Google Calendar invite.</p>
       <div class="success-note">
-        📅 Once confirmed, you'll get a Google Calendar invite. The call is 20 minutes — live product, no deck, no hard sell.
+        📅 The call is 20 minutes — live product walkthrough, no deck, no hard sell.
       </div>
     </div>
 
@@ -313,69 +322,14 @@
 </main>
 
 <script>
-  var TIME_LABELS = {
-    'Mon-morning':   'Monday morning (9–11am PT)',
-    'Mon-afternoon': 'Monday afternoon (1–4pm PT)',
-    'Tue-morning':   'Tuesday morning (9–11am PT)',
-    'Tue-afternoon': 'Tuesday afternoon (1–4pm PT)',
-    'Wed-morning':   'Wednesday morning (9–11am PT)',
-    'Wed-afternoon': 'Wednesday afternoon (1–4pm PT)',
-    'Thu-morning':   'Thursday morning (9–11am PT)',
-    'Thu-afternoon': 'Thursday afternoon (1–4pm PT)',
-    'Fri-morning':   'Friday morning (9–11am PT)',
-    'flexible':      'Flexible — any time works'
-  };
-
-  function handleSubmit(e) {
-    e.preventDefault();
-
-    var firstName = document.getElementById('firstName').value.trim();
-    var lastName  = document.getElementById('lastName').value.trim();
-    var email     = document.getElementById('email').value.trim();
-    var company   = document.getElementById('company').value.trim();
-    var timeSlot  = document.getElementById('timeSlot').value;
-    var context   = document.getElementById('context').value.trim();
-
-    var fullName = lastName ? firstName + ' ' + lastName : firstName;
-    var timeLabel = TIME_LABELS[timeSlot] || timeSlot;
-
-    var subjectLine = encodeURIComponent('Demo Request — ' + fullName + ' / ' + company);
-
-    var bodyParts = [
-      'Hi Rob,',
-      '',
-      "I'd like to schedule a 20-minute Sandbox demo.",
-      '',
-      'Name: ' + fullName,
-      'Company: ' + company,
-      'Email: ' + email,
-      'Preferred time: ' + timeLabel,
-      context ? '\nContext: ' + context : '',
-      '',
-      'Looking forward to it.',
-      '',
-      '— ' + firstName
-    ];
-
-    var bodyText = bodyParts.filter(function(l) { return l !== undefined; }).join('\n');
-    var mailtoLink = 'mailto:rob@sandboxgtm.com?subject=' + subjectLine + '&body=' + encodeURIComponent(bodyText);
-
-    var btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    btn.textContent = 'Opening email…';
-
-    var link = document.createElement('a');
-    link.href = mailtoLink;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    setTimeout(function() {
+  // Show success state when redirected back from FormSubmit with ?booked=1
+  (function() {
+    if (window.location.search.indexOf('booked=1') !== -1) {
       document.getElementById('formWrapper').style.display = 'none';
       document.getElementById('proofBar').style.display = 'none';
       document.getElementById('successState').style.display = 'block';
-    }, 400);
-  }
+    }
+  })();
 </script>
 
 </body>
