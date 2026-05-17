@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sandbox.co — Demo Pipeline Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3248;
+      --accent: #6c63ff;
+      --accent2: #4ade80;
+      --warn: #f59e0b;
+      --danger: #f43f5e;
+      --text: #e2e8f0;
+      --muted: #8892a4;
+      --radius: 10px;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px; }
+    header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .logo { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #fff; }
+    .logo span { color: var(--accent); }
+    .badge { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: rgba(108,99,255,0.15); color: var(--accent); border: 1px solid rgba(108,99,255,0.3); }
+    .badge.live { background: rgba(74,222,128,0.15); color: var(--accent2); border-color: rgba(74,222,128,0.3); }
+    .badge.warn { background: rgba(245,158,11,0.15); color: var(--warn); border-color: rgba(245,158,11,0.3); }
+    .last-updated { font-size: 12px; color: var(--muted); }
+
+    /* KPI row */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
+    .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+    .kpi-card .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+    .kpi-card .value { font-size: 32px; font-weight: 700; color: #fff; line-height: 1; }
+    .kpi-card .sub { font-size: 12px; color: var(--muted); margin-top: 5px; }
+    .kpi-card.green .value { color: var(--accent2); }
+    .kpi-card.warn .value { color: var(--warn); }
+    .kpi-card.danger .value { color: var(--danger); }
+    .kpi-card.purple .value { color: var(--accent); }
+
+    /* Funnel */
+    .section { margin-bottom: 28px; }
+    .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 14px; }
+    .funnel { display: flex; gap: 8px; align-items: stretch; }
+    .funnel-step { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center; position: relative; }
+    .funnel-step .stage-name { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px; }
+    .funnel-step .stage-count { font-size: 28px; font-weight: 700; color: #fff; }
+    .funnel-step .stage-rate { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .funnel-step.active { border-color: rgba(108,99,255,0.4); background: rgba(108,99,255,0.06); }
+    .funnel-step.hot { border-color: rgba(74,222,128,0.4); background: rgba(74,222,128,0.06); }
+    .funnel-step.bottleneck { border-color: rgba(244,63,94,0.4); background: rgba(244,63,94,0.06); }
+    .funnel-arrow { display: flex; align-items: center; color: var(--border); font-size: 18px; flex-shrink: 0; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    td { padding: 12px 14px; border-bottom: 1px solid rgba(46,50,72,0.5); vertical-align: top; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .pill { display: inline-block; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .pill.demo_ready { background: rgba(108,99,255,0.15); color: var(--accent); border: 1px solid rgba(108,99,255,0.25); }
+    .pill.contacted { background: rgba(148,163,184,0.12); color: var(--muted); border: 1px solid var(--border); }
+    .pill.sequence_complete { background: rgba(245,158,11,0.12); color: var(--warn); border: 1px solid rgba(245,158,11,0.25); }
+    .pill.declined { background: rgba(244,63,94,0.12); color: var(--danger); border: 1px solid rgba(244,63,94,0.2); }
+    .pill.demo_booked { background: rgba(74,222,128,0.15); color: var(--accent2); border: 1px solid rgba(74,222,128,0.25); }
+    .pill.step2 { background: rgba(74,222,128,0.12); color: var(--accent2); border: 1px solid rgba(74,222,128,0.2); }
+    .name { font-weight: 600; color: #fff; }
+    .company { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .email-link { font-size: 12px; color: var(--accent); }
+
+    /* Alerts */
+    .alert { display: flex; align-items: flex-start; gap: 12px; background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.25); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 20px; }
+    .alert.warn { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.25); }
+    .alert.green { background: rgba(74,222,128,0.07); border-color: rgba(74,222,128,0.25); }
+    .alert.purple { background: rgba(108,99,255,0.08); border-color: rgba(108,99,255,0.3); }
+    .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .alert-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+    .alert-body { font-size: 12px; color: var(--muted); line-height: 1.55; }
+    .alert-body a { color: var(--accent); }
+    .alert-body strong { color: var(--text); }
+    .alert-body code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 11px; }
+
+    /* CRM stages */
+    .stage-flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .stage-node { display: flex; align-items: center; gap: 8px; }
+    .stage-box { font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: 7px; border: 1px solid; }
+    .stage-box.outreach { background: rgba(148,163,184,0.08); border-color: var(--border); color: var(--muted); }
+    .stage-box.responded { background: rgba(108,99,255,0.08); border-color: rgba(108,99,255,0.3); color: var(--accent); }
+    .stage-box.booked { background: rgba(74,222,128,0.08); border-color: rgba(74,222,128,0.3); color: var(--accent2); }
+    .stage-box.completed { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.3); color: var(--warn); }
+    .stage-box.closed { background: rgba(108,99,255,0.12); border-color: rgba(108,99,255,0.4); color: #a78bfa; }
+    .stage-arrow { color: var(--border); font-size: 16px; }
+    .stage-count-badge { font-size: 10px; font-weight: 700; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 1px 7px; color: var(--muted); margin-left: 4px; }
+
+    /* Timeline */
+    .timeline { display: flex; flex-direction: column; gap: 0; }
+    .timeline-row { display: flex; align-items: flex-start; gap: 16px; padding: 12px 0; border-bottom: 1px solid rgba(46,50,72,0.4); }
+    .timeline-row:last-child { border-bottom: none; }
+    .tl-date { font-size: 12px; font-weight: 700; color: var(--accent2); min-width: 90px; padding-top: 1px; }
+    .tl-date.today { color: var(--warn); }
+    .tl-date.future { color: var(--muted); }
+    .tl-content strong { font-size: 13px; color: #fff; display: block; margin-bottom: 2px; }
+    .tl-content span { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .tl-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+    .tl-badge.hot { background: rgba(74,222,128,0.15); color: var(--accent2); border: 1px solid rgba(74,222,128,0.25); }
+    .tl-badge.auto { background: rgba(108,99,255,0.12); color: var(--accent); border: 1px solid rgba(108,99,255,0.2); }
+    .tl-badge.manual { background: rgba(245,158,11,0.12); color: var(--warn); border: 1px solid rgba(245,158,11,0.2); }
+
+    /* Next actions */
+    .action-list { list-style: none; }
+    .action-list li { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(46,50,72,0.5); }
+    .action-list li:last-child { border-bottom: none; }
+    .action-priority { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+    .p-red { background: rgba(244,63,94,0.15); color: var(--danger); border: 1px solid rgba(244,63,94,0.3); }
+    .p-yellow { background: rgba(245,158,11,0.15); color: var(--warn); border: 1px solid rgba(245,158,11,0.3); }
+    .p-green { background: rgba(74,222,128,0.12); color: var(--accent2); border: 1px solid rgba(74,222,128,0.25); }
+    .action-text { flex: 1; }
+    .action-text strong { font-size: 13px; color: #fff; display: block; margin-bottom: 2px; }
+    .action-text span { font-size: 12px; color: var(--muted); }
+    .action-due { font-size: 11px; font-weight: 600; color: var(--warn); margin-top: 3px; }
+    .action-due.red { color: var(--danger); }
+    .action-due.green { color: var(--accent2); }
+
+    /* Booking protocol */
+    .protocol { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+    .protocol-steps { list-style: none; counter-reset: step; }
+    .protocol-steps li { counter-increment: step; display: flex; align-items: flex-start; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(46,50,72,0.3); font-size: 13px; color: var(--text); }
+    .protocol-steps li:last-child { border-bottom: none; }
+    .protocol-steps li::before { content: counter(step); display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; min-width: 22px; background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.3); border-radius: 50%; font-size: 11px; font-weight: 700; color: var(--accent); margin-top: 1px; }
+    .protocol-steps code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 11px; }
+
+    footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; font-size: 11px; color: var(--muted); }
+
+    @media (max-width: 700px) {
+      .funnel { flex-direction: column; }
+      .funnel-arrow { transform: rotate(90deg); align-self: center; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .stage-flow { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">Sandbox<span>.co</span></div>
+    <div style="font-size:12px; color:var(--muted); margin-top:3px;">Demo Pipeline &amp; Conversion Tracker</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span class="badge warn">MONDAY LAUNCH — MAY 18</span>
+    <span class="last-updated">Updated: 2026-05-17 · SHIPPING RUN — 738 leads launch Monday 9am PT</span>
+  </div>
+</header>
+
+<!-- CRITICAL BANNER: Monday Launch -->
+<div class="alert" style="margin-bottom:14px;">
+  <div class="alert-icon">🚀</div>
+  <div>
+    <div class="alert-title">🔴 TOMORROW Mon May 18 — Campaign 3327450 Fires (738 Leads at 9am PT)</div>
+    <div class="alert-body">
+      <strong>30 leads/day, Mon–Fri, from rob@sandboxgtm.com.</strong> First replies expected May 19–21. Rob must check Smartlead inbox 3x/day starting Monday.<br/><br/>
+      <strong>Reply SLAs:</strong> Interested → 2h (T1) · Day confirmed → <strong>5 min</strong> (T6) · Not now → 4h (T2) · Unsubscribe → 1h (T3)<br/>
+      <strong>Runbook:</strong> <code>reply-handling-runbook.md</code> in project root — step-by-step for every reply type.
+    </div>
+  </div>
+</div>
+
+<!-- Booking page banner -->
+<div class="alert green" style="margin-bottom:14px;">
+  <div class="alert-icon">🟢</div>
+  <div>
+    <div class="alert-title">Live Booking Page — Operational</div>
+    <div class="alert-body">
+      <strong><a href="https://janis-leclair.github.io/sandbox-demo-booking/" target="_blank">https://janis-leclair.github.io/sandbox-demo-booking/</a></strong> — HTTPS, no login, FormSubmit backend (server-side, no mailto: failure). All 4 campaign sequences embed this URL.<br/>
+      ⚠️ <strong>FormSubmit activation required</strong>: Rob must click activation email in rob@sandboxgtm.com inbox — first submission triggers it.
+    </div>
+  </div>
+</div>
+
+<!-- Click signal banner -->
+<div class="alert warn" style="margin-bottom:14px;">
+  <div class="alert-icon">⭐</div>
+  <div>
+    <div class="alert-title">1 Unidentified Clicker — Hottest Lead in Pipeline</div>
+    <div class="alert-body">
+      Campaign 3262227 shows <strong>1 unique click</strong> on the booking URL — someone visited but didn't submit the form. Identity only available in Smartlead UI.<br/>
+      <strong>Rob must:</strong> Smartlead UI → Campaign 3262227 → Analytics → Links Clicked → find the lead → reply with T1 (3 specific time slots). <strong>Highest priority action.</strong>
+    </div>
+  </div>
+</div>
+
+<!-- Cal.com warning -->
+<div class="alert warn" style="margin-bottom:28px;">
+  <div class="alert-icon">⚠️</div>
+  <div>
+    <div class="alert-title">cal.com/edgarinvillamar/15min is 404 — Use GitHub Pages Booking URL</div>
+    <div class="alert-body">
+      The cal.com direct booking link is broken and has been removed from all sequences. Active workaround: <code>janis-leclair.github.io/sandbox-demo-booking/</code> (confirmed live, FormSubmit).<br/>
+      <strong>Fix:</strong> Create a valid cal.com booking link and update sequences + reply templates. Until then, use the GitHub Pages URL in all replies.
+    </div>
+  </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="section">
+  <div class="section-title">Campaign Metrics — 4 Active Campaigns</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="label">Total Leads</div>
+      <div class="value">825</div>
+      <div class="sub">743 batch2 · 44 main · 30 GTM · 8 follow-up</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="label">Emails Sent</div>
+      <div class="value">153</div>
+      <div class="sub">74 main · 57 GTM · 14 batch2 · 8 personal</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="label">Unique Opens</div>
+      <div class="value">39</div>
+      <div class="sub">21 main (55%) · 13 GTM (72%) · 3 batch2 · 2 personal</div>
+    </div>
+    <div class="kpi-card warn">
+      <div class="label">Clicks</div>
+      <div class="value">1</div>
+      <div class="sub">⭐ 1 unique click in 3262227 — identify in Smartlead UI</div>
+    </div>
+    <div class="kpi-card warn">
+      <div class="label">Real Replies</div>
+      <div class="value">0</div>
+      <div class="sub">2 OOO auto-replies (stopped=0 confirms); first real replies expected May 19-21</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="label">Demo Ready</div>
+      <div class="value">8</div>
+      <div class="sub">Opened — Step 2 sends Mon May 19 (May 27/28/29 slots)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Demos Booked</div>
+      <div class="value">0</div>
+      <div class="sub">Primary window May 27–29 · Fallback June 3</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Revenue</div>
+      <div class="value">$0</div>
+      <div class="sub">First close pending first demo</div>
+    </div>
+  </div>
+</div>
+
+<!-- CRM Pipeline Stages -->
+<div class="section">
+  <div class="section-title">CRM Pipeline Stages</div>
+  <div class="stage-flow">
+    <div class="stage-node">
+      <div class="stage-box outreach">Outreach <span class="stage-count-badge">39</span></div>
+    </div>
+    <div class="stage-arrow">→</div>
+    <div class="stage-node">
+      <div class="stage-box responded">Demo Ready <span class="stage-count-badge">8</span></div>
+    </div>
+    <div class="stage-arrow">→</div>
+    <div class="stage-node">
+      <div class="stage-box booked">Demo Booked <span class="stage-count-badge">0 ← target</span></div>
+    </div>
+    <div class="stage-arrow">→</div>
+    <div class="stage-node">
+      <div class="stage-box completed">Demo Completed <span class="stage-count-badge">0</span></div>
+    </div>
+    <div class="stage-arrow">→</div>
+    <div class="stage-node">
+      <div class="stage-box closed">Closed <span class="stage-count-badge">0</span></div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--muted);">Stage transitions tracked in D1 <code>pipeline_stage_log</code> · Conversion events in <code>conversion_events</code> · D1 stages: 39 contacted · 8 demo_ready · 1 declined_no_response · 1 declined · 10 quarantined</p>
+</div>
+
+<!-- Active Booking Timeline -->
+<div class="section">
+  <div class="section-title">⚡ Launch Timeline — May 17–June 3</div>
+  <div class="timeline">
+    <div class="timeline-row">
+      <div class="tl-date today">TODAY May 17</div>
+      <div class="tl-content">
+        <strong>Sunday — all campaigns paused (Mon–Fri only). Sequences verified CLEAN. <span class="tl-badge hot">READY</span></strong>
+        <span>3327450 seq 8635217-8635220 confirmed clean (janis-leclair URL in all 4 steps). 3329516 seq 8629747-8629749 clean. 3262227 seq 8630667-8630669 clean.</span>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="tl-date" style="color:var(--danger);font-weight:800;">Mon May 18</div>
+      <div class="tl-content">
+        <strong>🚀 Campaign 3327450 LAUNCHES — 30 leads/day from rob@sandboxgtm.com <span class="tl-badge hot">AUTO</span></strong>
+        <span>Step 1 fires to first 30 of 738 notStarted agency owner leads. Subject: "the coordination tax." Check inbox 3x today (9am / 1pm / 4pm PT) — first replies possible same day.</span>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="tl-date future">Tue May 19</div>
+      <div class="tl-content">
+        <strong>3329516 Step 2 fires to all 8 demo-ready leads <span class="tl-badge auto">AUTO</span></strong>
+        <span>"3 times that work — May 27 / 28 / 29." This is the direct booking ask for the 8 best ICP prospects. First real replies from 3327450 also expected today.</span>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="tl-date future">May 19–21</div>
+      <div class="tl-content">
+        <strong>First replies expected from 3327450 Step 1 sends <span class="tl-badge manual">ROB</span></strong>
+        <span>Reply classification: Interested → T1 within 2h · Day confirmed → T6 within 5 min · Not now → T2 within 4h. Runbook: reply-handling-runbook.md.</span>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="tl-date future" style="color:var(--accent2);font-weight:800;">Tue May 27</div>
+      <div class="tl-content">
+        <strong>🟢 PRIMARY BOOKING WINDOW — 10:00am PT <span class="tl-badge hot">LIVE</span></strong>
+        <span>If anyone confirms "Tuesday" → send Google Meet link within 5 minutes (T6). This is the primary conversion moment. Also: 3329516 Step 3 fires ~May 23 ("Last one — June 3 hold").</span>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="tl-date future" style="color:var(--accent2);font-weight:800;">Wed May 28</div>
+      <div class="tl-content">
+        <strong>🟢 SECOND BOOKING WINDOW — 2:00pm PT <span class="tl-badge hot">LIVE</span></strong>
+        <span>Reply "Wednesday" → immediate 5-min Google Meet close (T6). Same protocol as May 27.</span>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="tl-date future" style="color:var(--accent2);font-weight:800;">Thu May 29</div>
+      <div class="tl-content">
+        <strong>🟢 THIRD BOOKING WINDOW — 11:00am PT <span class="tl-badge hot">LIVE</span></strong>
+        <span>Reply "Thursday" → immediate 5-min Google Meet close (T6).</span>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="tl-date future">Wed June 3</div>
+      <div class="tl-content">
+        <strong>FALLBACK WINDOW — Step 3 "June 3 hold" <span class="tl-badge manual">FALLBACK</span></strong>
+        <span>Last-touch for anyone who missed May 27-29. Campaigns 3262227, 3329516, 3261764 step 3 targets this date. "Closing your file" also in play for 3327450 Step 4.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Campaign-level Funnel -->
+<div class="section">
+  <div class="section-title">4-Campaign Pipeline Funnel</div>
+  <div class="funnel">
+    <div class="funnel-step active">
+      <div class="stage-name">In Sequence</div>
+      <div class="stage-count">743</div>
+      <div class="stage-rate">3327450 notStarted</div>
+    </div>
+    <div class="funnel-arrow">›</div>
+    <div class="funnel-step active">
+      <div class="stage-name">Sent (Unique)</div>
+      <div class="stage-count">61</div>
+      <div class="stage-rate">3262227+3329516+3261764</div>
+    </div>
+    <div class="funnel-arrow">›</div>
+    <div class="funnel-step hot">
+      <div class="stage-name">Opened (Unique)</div>
+      <div class="stage-count">39</div>
+      <div class="stage-rate">55–72% open rate ✅</div>
+    </div>
+    <div class="funnel-arrow">›</div>
+    <div class="funnel-step bottleneck">
+      <div class="stage-name">Replied (Real)</div>
+      <div class="stage-count">0</div>
+      <div class="stage-rate">← May 19-21 target</div>
+    </div>
+    <div class="funnel-arrow">›</div>
+    <div class="funnel-step">
+      <div class="stage-name">Demo Booked</div>
+      <div class="stage-count">0</div>
+      <div class="stage-rate">Window May 27-29</div>
+    </div>
+  </div>
+</div>
+
+<!-- Demo-Ready Leads -->
+<div class="section">
+  <div class="section-title">Demo-Ready Leads — 8 Contacts (Step 2 Fires Mon May 19)</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Prospect</th>
+          <th>Email</th>
+          <th>Campaign Status</th>
+          <th>Next Trigger</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:var(--accent);font-weight:700;">1</td>
+          <td><div class="name">Randall Stemmer</div><div class="company">High Performance Advertising · Founder &amp; CEO</div></td>
+          <td><a class="email-link" href="mailto:randy@marinmarket.com">randy@marinmarket.com</a></td>
+          <td><span class="pill step2">3329516 INPROGRESS</span></td>
+          <td style="font-size:12px;color:var(--accent2);">Step 2 auto-sends May 19 — May 27/28/29 slots</td>
+        </tr>
+        <tr>
+          <td style="color:var(--accent);font-weight:700;">2</td>
+          <td><div class="name">Anita Nevins</div><div class="company">Direct Connection Advertising · Founder &amp; Co-CEO</div></td>
+          <td><a class="email-link" href="mailto:anita@directconnectionusa.com">anita@directconnectionusa.com</a></td>
+          <td><span class="pill step2">3329516 INPROGRESS</span></td>
+          <td style="font-size:12px;color:var(--accent2);">Step 2 auto-sends May 19</td>
+        </tr>
+        <tr>
+          <td style="color:var(--accent);font-weight:700;">3</td>
+          <td><div class="name">Lorie Sadler</div><div class="company">S&amp;D Marketing | Advertising · Co-Founder &amp; CEO</div></td>
+          <td><a class="email-link" href="mailto:ls@sd-advertising.com">ls@sd-advertising.com</a></td>
+          <td><span class="pill step2">3329516 INPROGRESS</span></td>
+          <td style="font-size:12px;color:var(--accent2);">Step 2 auto-sends May 19</td>
+        </tr>
+        <tr>
+          <td style="color:var(--accent);font-weight:700;">4</td>
+          <td><div class="name">David Pritchard</div><div class="company">iPitCrew Digital Media · Founder / CEO</div></td>
+          <td><a class="email-link" href="mailto:da@ipitcrew.com">da@ipitcrew.com</a></td>
+          <td><span class="pill step2">3329516 INPROGRESS</span></td>
+          <td style="font-size:12px;color:var(--accent2);">Step 2 auto-sends May 19</td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted);font-weight:600;">5</td>
+          <td><div class="name">Mendy Douglas</div><div class="company">DigiKai Marketing &amp; Advertising · CEO</div></td>
+          <td><a class="email-link" href="mailto:mj@digikaimarketing.com">mj@digikaimarketing.com</a></td>
+          <td><span class="pill demo_ready">3329516 INPROGRESS</span></td>
+          <td style="font-size:12px;color:var(--muted);">Step 2 auto-sends May 19</td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted);font-weight:600;">6</td>
+          <td><div class="name">Ibrahim Barhumi</div><div class="company">VIS Mountain Marketing &amp; Advertising · CEO</div></td>
+          <td><a class="email-link" href="mailto:ibarhumi@vismountain.com">ibarhumi@vismountain.com</a></td>
+          <td><span class="pill demo_ready">3329516 INPROGRESS</span></td>
+          <td style="font-size:12px;color:var(--muted);">Step 2 auto-sends May 19</td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted);font-weight:600;">7</td>
+          <td><div class="name">Tony Roberts</div><div class="company">The BLÜ Group · CEO</div></td>
+          <td><a class="email-link" href="mailto:tony@theblugroup.com">tony@theblugroup.com</a></td>
+          <td><span class="pill demo_ready">3329516 INPROGRESS</span></td>
+          <td style="font-size:12px;color:var(--muted);">Step 2 auto-sends May 19</td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted);font-weight:600;">8</td>
+          <td><div class="name">John Milan</div><div class="company">Milan Language Services · Business Owner</div></td>
+          <td><a class="email-link" href="mailto:john@milanlanguageservices.com">john@milanlanguageservices.com</a></td>
+          <td><span class="pill demo_ready">3329516 INPROGRESS</span></td>
+          <td style="font-size:12px;color:var(--muted);">Step 2 auto-sends May 19</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- When a Reply Arrives — Full Protocol -->
+<div class="section">
+  <div class="section-title">🎯 Reply-to-Meeting Protocol — Exact Steps</div>
+  <div class="protocol">
+    <p style="font-size:12px;color:var(--warn);font-weight:600;margin-bottom:12px;">⚡ TWO SCENARIOS — READ BEFORE ACTING. Full runbook: reply-handling-runbook.md</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px;"><strong style="color:var(--text);">Scenario A — Prospect replies with interest (no specific day):</strong> Use T1 in REPLY-TEMPLATES.md. SLA: 2 hours. Offer May 27 10am / May 28 2pm / May 29 11am PT. Include booking URL.</p>
+    <p style="font-size:12px;color:var(--accent2);font-weight:700;margin-bottom:14px;">⚡ Scenario B — Prospect confirms a day ("Tuesday" / "May 27"): Use T6 "Booking Confirmed." SLA: 5 MINUTES. This is the close — do not let it wait.</p>
+    <ul class="protocol-steps">
+      <li>Check Smartlead inbox (app.smartlead.ai → Campaign 3327450 or 3262227 or 3329516 → Inbox tab). Classify reply: Interested / Day confirmed / Not now / Unsubscribe / OOO.</li>
+      <li>If <strong>day confirmed</strong>: Go to <a href="https://meet.google.com" target="_blank" style="color:var(--accent);">meet.google.com</a> → "New meeting" → "Create a meeting for later" → copy Meet link (60 sec).</li>
+      <li>Open <a href="https://calendar.google.com" target="_blank" style="color:var(--accent);">calendar.google.com</a> → Create event → "Sandbox Demo — [Name] + Rob" → 20 min → add their email → add Meet link → Send invite (90 sec).</li>
+      <li>Reply to their email using T6 in REPLY-TEMPLATES.md. Paste the Meet link. Confirm day/time. Total time to reply: under 5 minutes.</li>
+      <li>In Smartlead: mark lead as "Interested" (sequence auto-stops on reply; this confirms categorization).</li>
+      <li>In D1: <code>UPDATE cold_outreach_leads SET stage='demo_scheduled' WHERE email='[EMAIL]';</code> + INSERT into <code>conversion_events</code> (event_type: demo_booked). Full SQL in T6.</li>
+      <li>Add to active-pipeline.md under "Demo Scheduled." Run QUALIFICATION-SCORECARD.md after the call.</li>
+    </ul>
+    <p style="font-size:11px;color:var(--muted);margin-top:12px;">If "Interested" (no day): Use T1 — offer 3 specific times → include booking URL → wait for day confirmation → T6.</p>
+  </div>
+</div>
+
+<!-- Reply-Routing Path -->
+<div class="section">
+  <div class="section-title">Reply Routing Path — How It Works</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;">
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:center;gap:12px;font-size:13px;">
+        <span style="background:rgba(108,99,255,0.15);border:1px solid rgba(108,99,255,0.3);border-radius:6px;padding:4px 10px;color:var(--accent);font-weight:600;white-space:nowrap;">Prospect Replies</span>
+        <span style="color:var(--border);">→</span>
+        <span style="color:var(--muted);">Smartlead IMAP captures the reply (is_imap_success=true, stop_lead_settings=REPLY_TO_AN_EMAIL — sequence auto-stops)</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;font-size:13px;">
+        <span style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:4px 10px;color:var(--warn);font-weight:600;white-space:nowrap;">Rob Sees Reply</span>
+        <span style="color:var(--border);">→</span>
+        <span style="color:var(--muted);">app.smartlead.ai → Campaign inbox → reply appears in thread. Rob gets email notification if Smartlead notifications are on.</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;font-size:13px;">
+        <span style="background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.25);border-radius:6px;padding:4px 10px;color:var(--accent2);font-weight:600;white-space:nowrap;">Rob Responds</span>
+        <span style="color:var(--border);">→</span>
+        <span style="color:var(--muted);">Reply within SLA using reply-handling-runbook.md T1/T2/T3. If day confirmed → T6 "Booking Confirmed" in 5 min.</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;font-size:13px;">
+        <span style="background:rgba(108,99,255,0.12);border:1px solid rgba(108,99,255,0.3);border-radius:6px;padding:4px 10px;color:var(--accent);font-weight:600;white-space:nowrap;">Demo Booked</span>
+        <span style="color:var(--border);">→</span>
+        <span style="color:var(--muted);">Google Meet link created + Calendar invite sent + D1 stage updated to demo_scheduled + conversion_events INSERT.</span>
+      </div>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:14px;">Booking URL in all sequences: <a href="https://janis-leclair.github.io/sandbox-demo-booking/" target="_blank" style="color:var(--accent);">janis-leclair.github.io/sandbox-demo-booking/</a> · FormSubmit backend (server-side)</p>
+  </div>
+</div>
+
+<!-- Priority Actions -->
+<div class="section">
+  <div class="section-title">Priority Actions — Rob (May 17–19)</div>
+  <ul class="action-list">
+    <li>
+      <div class="action-priority p-red">1</div>
+      <div class="action-text">
+        <strong>⭐ Identify the CLICKER — 1 unique click in campaign 3262227</strong>
+        <span>Smartlead UI → Campaign 3262227 → Analytics → Links Clicked → find the lead → reply from their email thread with T1 (3 specific time slots: May 27/28/29). This is the hottest lead in the pipeline right now.</span>
+        <div class="action-due red">TODAY — highest priority</div>
+      </div>
+    </li>
+    <li>
+      <div class="action-priority p-red">2</div>
+      <div class="action-text">
+        <strong>🔴 Activate FormSubmit — check rob@sandboxgtm.com inbox</strong>
+        <span>The first submission to the booking form will trigger an activation email from FormSubmit. Rob must click it. Without activation, future form submissions may not arrive in his inbox.</span>
+        <div class="action-due red">Before May 27 booking window</div>
+      </div>
+    </li>
+    <li>
+      <div class="action-priority p-red">3</div>
+      <div class="action-text">
+        <strong>🚀 Campaign 3327450 — DO NOT EDIT SEQUENCES before Monday sends</strong>
+        <span>Sequences keep reverting to dead cal.com URL when Rob edits in Smartlead UI. Current seq IDs 8635217-8635220 (fixed 18:58 UTC May 17) are CLEAN. Do not touch until after Monday launches.</span>
+        <div class="action-due red">Tonight — do not edit</div>
+      </div>
+    </li>
+    <li>
+      <div class="action-priority p-red">4</div>
+      <div class="action-text">
+        <strong>🔴 Monitor Smartlead inbox DAILY starting Mon May 18</strong>
+        <span>Check 9am / 1pm / 4pm PT. First replies from 3327450 expected May 19-21. 2h SLA on every positive reply (T1). 5-min SLA on confirmed day (T6). Use reply-handling-runbook.md.</span>
+        <div class="action-due red">Daily May 18 onwards — CRITICAL WINDOW</div>
+      </div>
+    </li>
+    <li>
+      <div class="action-priority p-yellow">5</div>
+      <div class="action-text">
+        <strong>LinkedIn backup — Stemmer/Nevins/Sadler/Pritchard if no reply by May 22</strong>
+        <span>After 3329516 Step 2 sends May 19 and Step 3 sends May 23 — if no reply from any of the top 4, LinkedIn DM is the last-touch option. Drafts in active-pipeline.md.</span>
+        <div class="action-due">May 22-25</div>
+      </div>
+    </li>
+    <li>
+      <div class="action-priority p-green">6</div>
+      <div class="action-text">
+        <strong>Run QUALIFICATION-SCORECARD.md immediately after each demo</strong>
+        <span>Scoring criteria ready in pipeline/QUALIFICATION-SCORECARD.md. Score within 30 min of call ending — determines next step: proposal, trial, or close.</span>
+        <div class="action-due green">After first demo</div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- Conversion Events Log -->
+<div class="section">
+  <div class="section-title">Conversion Events Log</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Date</th><th>Prospect</th><th>Event</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr>
+          <td style="color:var(--muted);">—</td>
+          <td style="color:var(--muted);">—</td>
+          <td style="color:var(--muted);">No conversion events yet</td>
+          <td style="color:var(--muted); font-size:12px;">First reply → demo booking will be event #1. Log via D1 <code>conversion_events</code> table. SQL in T6 of REPLY-TEMPLATES.md.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<footer>
+  Sandbox.co Demo Pipeline — SHIPPING RUN May 17 · 4 active campaigns<br/>
+  3327450: 743 leads / 14 sent / 9 opens / seq 8635217-8635220 CLEAN (janis-leclair URL) / LAUNCHES MON MAY 18<br/>
+  3262227: 44 leads / 74 sent / 21u opens (55%) / 1 CLICK / 2 OOO replies / 38 INPROGRESS / 6 notStarted<br/>
+  3329516: 8 leads / 8 sent / 2 opens / 8 INPROGRESS — Step 2 sends Tue May 19 (May 27/28/29 slots)<br/>
+  3261764: 30 leads / 57 sent / 13u opens (72%) / 18 INPROGRESS / 12 notStarted<br/>
+  D1: 59 leads (39 contacted · 8 demo_ready · 1 declined_no_response · 1 declined · 10 quarantined)<br/>
+  Booking: janis-leclair.github.io/sandbox-demo-booking/ (LIVE, FormSubmit) · cal.com/edgarinvillamar/15min = 404 (removed from all sequences)<br/>
+  Reply runbook: reply-handling-runbook.md · Primary booking window: May 27–29 · Fallback: June 3<br/>
+  Updated: 2026-05-17 SHIPPING RUN (18th seq fix for 3327450, seq 8635217-8635220)
+</footer>
+
+</body>
+</html>
