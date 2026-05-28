@@ -87,86 +87,6 @@
 
     .card-body { padding: 32px 40px 40px; }
 
-    /* Quick contact — primary CTA */
-    .quick-contact {
-      background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);
-      border: 1.5px solid #86EFAC;
-      border-radius: 10px;
-      padding: 20px 24px 18px;
-      margin-bottom: 24px;
-    }
-    .quick-contact-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: #059669;
-      margin-bottom: 8px;
-    }
-    .quick-contact h3 {
-      font-size: 16px;
-      font-weight: 700;
-      color: #111827;
-      margin-bottom: 5px;
-      letter-spacing: -0.01em;
-    }
-    .quick-contact p {
-      font-size: 13px;
-      color: #374151;
-      margin-bottom: 14px;
-      line-height: 1.55;
-    }
-    .quick-contact p strong { color: #111827; }
-    .email-direct-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: #059669;
-      color: white;
-      font-size: 14px;
-      font-weight: 600;
-      padding: 10px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      transition: background 0.15s, box-shadow 0.15s;
-      box-shadow: 0 1px 3px rgba(5,150,105,0.25);
-    }
-    .email-direct-btn:hover { background: #047857; box-shadow: 0 3px 10px rgba(5,150,105,0.30); }
-    .time-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 12px;
-    }
-    .time-chip {
-      font-size: 11px;
-      font-weight: 500;
-      color: #065F46;
-      background: #D1FAE5;
-      padding: 3px 10px;
-      border-radius: 20px;
-      border: 1px solid #A7F3D0;
-    }
-
-    /* Divider */
-    .form-divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 20px 0 24px;
-      color: #9CA3AF;
-      font-size: 12px;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .form-divider::before, .form-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
     .form-group { margin-bottom: 20px; }
     label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; letter-spacing: 0.01em; }
     label .req { color: var(--accent); margin-left: 2px; }
@@ -219,6 +139,41 @@
     .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
     .disclaimer { font-size: 12px; color: #9CA3AF; text-align: center; margin-top: 14px; line-height: 1.5; }
+    .email-first-cta {
+      margin-bottom: 24px;
+    }
+    .email-first-btn {
+      display: block;
+      width: 100%;
+      padding: 13px 24px;
+      background: var(--success);
+      color: #fff;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      letter-spacing: -0.01em;
+      box-shadow: 0 1px 3px rgba(5,150,105,0.25);
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    }
+    .email-first-btn:hover { background: #047857; box-shadow: 0 4px 12px rgba(5,150,105,0.30); transform: translateY(-1px); }
+    .email-first-btn:active { transform: translateY(0); }
+    .email-first-note { font-size: 12px; color: var(--muted); text-align: center; margin-top: 8px; }
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .or-divider::before, .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .or-divider span { font-size: 12px; color: #9CA3AF; font-weight: 500; white-space: nowrap; }
+    .direct-email-fallback { display: none; }
 
     /* Success state */
     .success-state {
@@ -277,7 +232,6 @@
       .card-header h1 { font-size: 22px; }
       .row-2 { grid-template-columns: 1fr; }
       .proof-bar { padding: 14px 24px; }
-      .quick-contact { padding: 16px 18px; }
     }
   </style>
 </head>
@@ -313,26 +267,15 @@
 
     <div class="card-body" id="formWrapper">
 
-      <!-- PRIMARY CTA: Direct email (works immediately, no dependencies) -->
-      <div class="quick-contact">
-        <div class="quick-contact-label">Fastest way to book</div>
-        <h3>Email Rob directly</h3>
-        <p>Send a quick note to <strong>rob@sandboxgtm.com</strong> — just say your name, company, and which time works. Rob confirms within 2 hours with a Google Meet link.</p>
-        <a
-          href="mailto:rob@sandboxgtm.com?subject=Demo%20Request%20%E2%80%94%20Sandbox&body=Hi%20Rob%2C%0A%0AI%27d%20like%20to%20book%20a%2020-minute%20Sandbox%20demo.%0A%0AName%3A%20%0ACompany%3A%20%0APreferred%20time%3A%20%0A%0AThanks"
-          class="email-direct-btn"
-        >
+      <!-- Direct email CTA — works immediately, no activation required -->
+      <div class="email-first-cta">
+        <a href="mailto:rob@sandboxgtm.com?subject=Demo%20Request%20%E2%80%94%20Sandbox.co&body=Hi%20Rob%2C%0A%0AI%27d%20like%20to%20book%20a%2020-minute%20Sandbox%20demo.%0A%0AName%3A%20%0ACompany%3A%20%0APreferred%20time%20(pick%20one)%3A%0A%E2%80%A2%20Tuesday%20June%203%20at%2010am%20PT%0A%E2%80%A2%20Wednesday%20June%204%20at%202pm%20PT%0A%E2%80%A2%20Thursday%20June%205%20at%2011am%20PT%0A%E2%80%A2%20Tuesday%20June%2010%20at%2010am%20PT%0A%0AThanks" class="email-first-btn">
           Email rob@sandboxgtm.com →
         </a>
-        <div class="time-chips">
-          <span class="time-chip">Tue June 3 · 10am PT</span>
-          <span class="time-chip">Wed June 4 · 2pm PT</span>
-          <span class="time-chip">Thu June 5 · 11am PT</span>
-          <span class="time-chip">Tue June 10 · 10am PT</span>
-        </div>
+        <p class="email-first-note">Opens your email app. Rob confirms within 2 hours — fastest path to a slot.</p>
       </div>
 
-      <div class="form-divider">or fill out the form</div>
+      <div class="or-divider"><span>or fill in the form below</span></div>
 
       <form
         action="https://formsubmit.co/rob@sandboxgtm.com"
@@ -391,6 +334,10 @@
 
         <p class="disclaimer">
           Rob will confirm your time slot within 2 hours. No spam ever.
+        </p>
+
+        <p class="direct-email-fallback">
+          Prefer email? Reach Rob directly at <a href="mailto:rob@sandboxgtm.com?subject=Demo%20Request%20%E2%80%94%20Sandbox&body=Hi%20Rob%2C%0A%0AI%27d%20like%20to%20schedule%20a%2020-minute%20Sandbox%20demo.%0A%0AName%3A%20%0ACompany%3A%20%0APreferred%20time%3A%20%0A%0AThanks">rob@sandboxgtm.com</a>
         </p>
 
       </form>
