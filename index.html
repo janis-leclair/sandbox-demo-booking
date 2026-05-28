@@ -87,6 +87,86 @@
 
     .card-body { padding: 32px 40px 40px; }
 
+    /* Quick contact — primary CTA */
+    .quick-contact {
+      background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);
+      border: 1.5px solid #86EFAC;
+      border-radius: 10px;
+      padding: 20px 24px 18px;
+      margin-bottom: 24px;
+    }
+    .quick-contact-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #059669;
+      margin-bottom: 8px;
+    }
+    .quick-contact h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 5px;
+      letter-spacing: -0.01em;
+    }
+    .quick-contact p {
+      font-size: 13px;
+      color: #374151;
+      margin-bottom: 14px;
+      line-height: 1.55;
+    }
+    .quick-contact p strong { color: #111827; }
+    .email-direct-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #059669;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background 0.15s, box-shadow 0.15s;
+      box-shadow: 0 1px 3px rgba(5,150,105,0.25);
+    }
+    .email-direct-btn:hover { background: #047857; box-shadow: 0 3px 10px rgba(5,150,105,0.30); }
+    .time-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .time-chip {
+      font-size: 11px;
+      font-weight: 500;
+      color: #065F46;
+      background: #D1FAE5;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid #A7F3D0;
+    }
+
+    /* Divider */
+    .form-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0 24px;
+      color: #9CA3AF;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .form-divider::before, .form-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
     .form-group { margin-bottom: 20px; }
     label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; letter-spacing: 0.01em; }
     label .req { color: var(--accent); margin-left: 2px; }
@@ -197,6 +277,7 @@
       .card-header h1 { font-size: 22px; }
       .row-2 { grid-template-columns: 1fr; }
       .proof-bar { padding: 14px 24px; }
+      .quick-contact { padding: 16px 18px; }
     }
   </style>
 </head>
@@ -231,13 +312,35 @@
     </div>
 
     <div class="card-body" id="formWrapper">
-      <!-- FormSubmit.co: no account needed, first submission triggers verification email to Rob -->
-      <form id="bookingForm"
-            action="https://formsubmit.co/rob@sandboxgtm.com"
-            method="POST">
 
-        <!-- FormSubmit configuration -->
-        <input type="hidden" name="_subject" value="New Demo Request — Sandbox" />
+      <!-- PRIMARY CTA: Direct email (works immediately, no dependencies) -->
+      <div class="quick-contact">
+        <div class="quick-contact-label">Fastest way to book</div>
+        <h3>Email Rob directly</h3>
+        <p>Send a quick note to <strong>rob@sandboxgtm.com</strong> — just say your name, company, and which time works. Rob confirms within 2 hours with a Google Meet link.</p>
+        <a
+          href="mailto:rob@sandboxgtm.com?subject=Demo%20Request%20%E2%80%94%20Sandbox&body=Hi%20Rob%2C%0A%0AI%27d%20like%20to%20book%20a%2020-minute%20Sandbox%20demo.%0A%0AName%3A%20%0ACompany%3A%20%0APreferred%20time%3A%20%0A%0AThanks"
+          class="email-direct-btn"
+        >
+          Email rob@sandboxgtm.com →
+        </a>
+        <div class="time-chips">
+          <span class="time-chip">Tue June 3 · 10am PT</span>
+          <span class="time-chip">Wed June 4 · 2pm PT</span>
+          <span class="time-chip">Thu June 5 · 11am PT</span>
+          <span class="time-chip">Tue June 10 · 10am PT</span>
+        </div>
+      </div>
+
+      <div class="form-divider">or fill out the form</div>
+
+      <form
+        action="https://formsubmit.co/rob@sandboxgtm.com"
+        method="POST"
+        id="bookingForm"
+      >
+        <!-- FormSubmit config -->
+        <input type="hidden" name="_subject" value="Demo Request — Sandbox.co" />
         <input type="hidden" name="_next" value="https://janis-leclair.github.io/sandbox-demo-booking/?booked=1" />
         <input type="hidden" name="_captcha" value="false" />
         <input type="hidden" name="_template" value="table" />
@@ -267,12 +370,12 @@
           <label for="timeSlot">When works best? <span class="req">*</span></label>
           <select id="timeSlot" name="preferred_time" required>
             <option value="" disabled selected>Select a time preference…</option>
-            <option value="Tuesday June 3 at 10am PT">Tue June 3 at 10am PT</option>
-            <option value="Wednesday June 4 at 2pm PT">Wed June 4 at 2pm PT</option>
-            <option value="Thursday June 5 at 11am PT">Thu June 5 at 11am PT</option>
-            <option value="Tuesday June 10 at 10am PT">Tue June 10 at 10am PT</option>
-            <option value="Wednesday June 11 at 2pm PT">Wed June 11 at 2pm PT</option>
-            <option value="Thursday June 12 at 11am PT">Thu June 12 at 11am PT</option>
+            <option value="Tuesday June 3 at 10am PT">Tuesday June 3 at 10am PT</option>
+            <option value="Wednesday June 4 at 2pm PT">Wednesday June 4 at 2pm PT</option>
+            <option value="Thursday June 5 at 11am PT">Thursday June 5 at 11am PT</option>
+            <option value="Tuesday June 10 at 10am PT">Tuesday June 10 at 10am PT</option>
+            <option value="Wednesday June 11 at 2pm PT">Wednesday June 11 at 2pm PT</option>
+            <option value="Thursday June 12 at 11am PT">Thursday June 12 at 11am PT</option>
             <option value="Flexible — send me your best time">Flexible — send me your best time</option>
           </select>
         </div>
@@ -290,10 +393,6 @@
           Rob will confirm your time slot within 2 hours. No spam ever.
         </p>
 
-        <p style="font-size:13px;color:#6B7280;text-align:center;margin-top:12px;">
-          Prefer to email directly? <a href="mailto:rob@sandboxgtm.com?subject=Demo%20Request%20%E2%80%94%20Sandbox&body=Hi%20Rob%2C%0A%0AI%27d%20like%20to%20schedule%20a%2020-minute%20Sandbox%20demo.%0A%0AName%3A%20%0ACompany%3A%20%0APreferred%20time%3A%20%0A%0AThanks" style="color:#2563EB;text-decoration:none;font-weight:500;">rob@sandboxgtm.com</a>
-        </p>
-
       </form>
     </div>
 
@@ -304,9 +403,9 @@
         </svg>
       </div>
       <h2>Request sent.</h2>
-      <p>Rob received your demo request and will confirm your time slot within 2 hours. Check your inbox for a Google Calendar invite.</p>
+      <p>Rob received your demo request and will confirm your time slot within 2 hours.</p>
       <div class="success-note">
-        📅 The call is 20 minutes — live product walkthrough, no deck, no hard sell.
+        📅 Once confirmed, you'll get a Google Calendar invite. The call is 20 minutes — live product, no deck, no hard sell.
       </div>
     </div>
 
@@ -323,7 +422,7 @@
 </main>
 
 <script>
-  // Show success state when redirected back from FormSubmit with ?booked=1
+  // Show success state if redirected back with ?booked=1
   (function() {
     if (window.location.search.indexOf('booked=1') !== -1) {
       document.getElementById('formWrapper').style.display = 'none';
