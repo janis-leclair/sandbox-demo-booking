@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sandy Pilot — See What Sandy Builds for Your Business</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0c0c0e;
+      --bg2:      #111115;
+      --bg3:      #16161c;
+      --border:   #1e1e27;
+      --amber:    #f59e0b;
+      --amber-dk: #92400e;
+      --amber-lt: #fde68a;
+      --text:     #e2e2ea;
+      --text-dim: #7c7c92;
+      --text-xs:  #4a4a62;
+      --green:    #34d399;
+      --red:      #f87171;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a { color: var(--amber); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .wrap { max-width: 680px; margin: 0 auto; padding: 0 24px; }
+    .wrap-wide { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── Top bar ── */
+    .topbar {
+      border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+    }
+    .topbar-inner {
+      max-width: 960px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar-logo {
+      font-size: 15px; font-weight: 700; letter-spacing: -0.3px; color: #fff;
+    }
+    .topbar-logo span { color: var(--amber); }
+    .topbar-cta {
+      background: var(--amber); color: #000; font-size: 13px; font-weight: 700;
+      padding: 7px 16px; border-radius: 6px; cursor: pointer; border: none;
+      text-decoration: none;
+    }
+    .topbar-cta:hover { background: var(--amber-lt); text-decoration: none; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 72px 0 56px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #1a1208; border: 1px solid #3a2800;
+      color: var(--amber); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.8px; text-transform: uppercase;
+      padding: 5px 12px; border-radius: 20px;
+      margin-bottom: 24px;
+    }
+    .hero-eyebrow .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--amber);
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 44px);
+      font-weight: 800;
+      letter-spacing: -1.2px;
+      line-height: 1.15;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--amber);
+    }
+
+    .hero-sub {
+      font-size: 17px; color: var(--text-dim); line-height: 1.65;
+      max-width: 560px; margin-bottom: 36px;
+    }
+
+    .hero-proof {
+      display: flex; gap: 24px; flex-wrap: wrap;
+      margin-bottom: 40px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    .proof-stat { text-align: left; }
+    .proof-stat .n {
+      font-size: 28px; font-weight: 800; color: var(--amber);
+      letter-spacing: -0.8px; line-height: 1;
+    }
+    .proof-stat .l {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--text-xs); margin-top: 4px;
+    }
+
+    .cta-row {
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .cta-primary {
+      display: inline-block;
+      background: var(--amber); color: #000;
+      font-size: 15px; font-weight: 700;
+      padding: 13px 28px; border-radius: 8px;
+      cursor: pointer; border: none;
+      text-decoration: none; transition: background .15s;
+    }
+    .cta-primary:hover { background: var(--amber-lt); text-decoration: none; }
+    .cta-note {
+      font-size: 12px; color: var(--text-xs);
+    }
+
+    /* ── Section headings ── */
+    .section { padding: 56px 0; border-top: 1px solid var(--border); }
+
+    .section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--amber);
+      margin-bottom: 10px;
+    }
+
+    .section h2 {
+      font-size: clamp(20px, 3vw, 28px); font-weight: 800;
+      letter-spacing: -0.6px; color: #fff; margin-bottom: 14px;
+      line-height: 1.25;
+    }
+
+    .section-sub {
+      font-size: 15px; color: var(--text-dim); line-height: 1.65;
+      max-width: 540px; margin-bottom: 32px;
+    }
+
+    /* ── Sample output block ── */
+    .output-block {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .output-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--bg3);
+      border-bottom: 1px solid var(--border);
+    }
+    .output-header .prompt {
+      font-size: 12px; color: var(--text-dim);
+      font-family: "SF Mono", "Cascadia Code", monospace;
+    }
+    .output-header .prompt strong { color: var(--amber); }
+    .output-header .timer {
+      font-size: 11px; font-weight: 700; color: var(--green);
+      background: #0f2a1e; border: 1px solid #1a4a30;
+      padding: 3px 10px; border-radius: 20px;
+    }
+
+    .output-leads {
+      overflow-x: auto;
+    }
+
+    .leads-table {
+      width: 100%; border-collapse: collapse; font-size: 13px;
+    }
+    .leads-table th {
+      text-align: left; padding: 10px 16px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+      text-transform: uppercase; color: var(--text-xs);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg3); white-space: nowrap;
+    }
+    .leads-table td {
+      padding: 11px 16px; border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .leads-table tr:last-child td { border-bottom: none; }
+    .leads-table .name-cell { font-weight: 600; color: #fff; white-space: nowrap; }
+    .leads-table .co-cell { color: var(--text-dim); white-space: nowrap; }
+    .leads-table .sig-cell {
+      color: var(--text-dim); font-size: 12px; max-width: 220px;
+      line-height: 1.5;
+    }
+    .leads-table .score-cell {
+      font-weight: 700; color: var(--amber); white-space: nowrap;
+    }
+
+    .output-email {
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .email-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+      text-transform: uppercase; color: var(--text-xs); margin-bottom: 12px;
+    }
+    .email-subject {
+      font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 12px;
+    }
+    .email-body {
+      font-size: 13px; color: var(--text-dim); line-height: 1.75;
+    }
+    .email-body p { margin-bottom: 10px; }
+    .email-body p:last-child { margin-bottom: 0; }
+    .email-body .hl { color: var(--amber); font-weight: 600; }
+
+    /* ── What's included ── */
+    .includes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media(max-width:540px) {
+      .includes-grid { grid-template-columns: 1fr; }
+    }
+
+    .include-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+    }
+    .include-card .ic-icon {
+      font-size: 20px; margin-bottom: 10px;
+    }
+    .include-card .ic-title {
+      font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px;
+    }
+    .include-card .ic-desc {
+      font-size: 13px; color: var(--text-dim); line-height: 1.55;
+    }
+
+    /* ── Pricing ── */
+    .pricing-row {
+      display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px;
+    }
+
+    .price-card {
+      flex: 1; min-width: 180px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 18px;
+    }
+
+    .price-card.highlight {
+      border-color: var(--amber-dk);
+      background: #14110a;
+    }
+
+    .price-card .pc-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+      text-transform: uppercase; color: var(--text-xs); margin-bottom: 12px;
+    }
+    .price-card.highlight .pc-label { color: var(--amber); }
+
+    .price-card .pc-price {
+      font-size: 30px; font-weight: 800; letter-spacing: -0.8px;
+      color: var(--text-dim); margin-bottom: 4px;
+    }
+    .price-card.highlight .pc-price { color: var(--amber); }
+
+    .price-card .pc-per {
+      font-size: 12px; color: var(--text-xs); margin-bottom: 14px;
+    }
+
+    .price-card ul {
+      list-style: none; font-size: 13px; color: var(--text-dim);
+    }
+    .price-card ul li {
+      padding: 4px 0;
+    }
+    .price-card ul li::before {
+      content: "· "; color: var(--text-xs);
+    }
+
+    .price-vs {
+      font-size: 13px; color: var(--text-xs);
+      padding: 14px 0;
+      line-height: 1.7;
+    }
+
+    /* ── Who it's for ── */
+    .fit-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    @media(max-width:540px) {
+      .fit-grid { grid-template-columns: 1fr; }
+    }
+
+    .fit-card {
+      border-radius: 10px; padding: 18px;
+    }
+    .fit-card.yes {
+      background: #0f1e14; border: 1px solid #1a3d22;
+    }
+    .fit-card.no {
+      background: #180f0f; border: 1px solid #3a1212;
+    }
+    .fit-card .fc-header {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.7px;
+      text-transform: uppercase; margin-bottom: 12px;
+    }
+    .fit-card.yes .fc-header { color: var(--green); }
+    .fit-card.no .fc-header { color: var(--red); }
+
+    .fit-card ul {
+      list-style: none; font-size: 13px; color: var(--text-dim);
+    }
+    .fit-card ul li { padding: 4px 0; }
+    .fit-card.yes ul li::before { content: "✓ "; color: var(--green); font-weight: 700; }
+    .fit-card.no ul li::before { content: "✕ "; color: var(--red); font-weight: 700; }
+
+    /* ── Final CTA block ── */
+    .cta-block {
+      background: #14110a;
+      border: 1px solid var(--amber-dk);
+      border-radius: 16px;
+      padding: 40px 36px;
+      text-align: center;
+    }
+    .cta-block h2 {
+      font-size: clamp(20px, 3vw, 28px); font-weight: 800;
+      letter-spacing: -0.6px; color: #fff; margin-bottom: 12px;
+    }
+    .cta-block p {
+      font-size: 15px; color: var(--text-dim); margin-bottom: 28px;
+      max-width: 440px; margin-left: auto; margin-right: auto;
+    }
+    .cta-block .cta-primary {
+      font-size: 16px; padding: 14px 36px;
+    }
+    .cta-block .cta-note {
+      margin-top: 14px; font-size: 12px; color: var(--text-xs);
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 0;
+      text-align: center;
+      font-size: 12px; color: var(--text-xs);
+    }
+
+    /* ── Responsive ── */
+    @media(max-width:600px) {
+      .hero { padding: 48px 0 40px; }
+      .hero-proof { gap: 16px; }
+      .cta-block { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<nav class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-logo">Sandy <span>by Sandbox</span></div>
+    <a href="https://janis-leclair.github.io/sandbox-demo-booking/" class="topbar-cta">Book a session</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="wrap">
+    <div class="hero-eyebrow"><span class="dot"></span>30-day pilot · limited spots</div>
+
+    <h1>See what Sandy builds<br>for <em>your</em> business — in 20 minutes.</h1>
+
+    <p class="hero-sub">
+      We sent 135 cold emails to operators like you. 67% opened. Almost none replied.
+      That's not a deliverability problem — it's a "not enough context to say yes" problem.
+      This call fixes that. Book 20 minutes and Sandy runs a live session on your actual business.
+    </p>
+
+    <div class="hero-proof">
+      <div class="proof-stat">
+        <div class="n">67%</div>
+        <div class="l">Email open rate</div>
+      </div>
+      <div class="proof-stat">
+        <div class="n">22 min</div>
+        <div class="l">Avg session to first output</div>
+      </div>
+      <div class="proof-stat">
+        <div class="n">$49/mo</div>
+        <div class="l">Beta price (→ $99 at launch)</div>
+      </div>
+      <div class="proof-stat">
+        <div class="n">0</div>
+        <div class="l">Contracts or minimums</div>
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <a href="https://janis-leclair.github.io/sandbox-demo-booking/" class="cta-primary">
+        Book a 20-minute session →
+      </a>
+      <span class="cta-note">No deck. No pitch. Sandy runs on your use case.</span>
+    </div>
+  </div>
+</div>
+
+<!-- Sample output -->
+<div class="section">
+  <div class="wrap">
+    <div class="section-label">What Sandy actually builds</div>
+    <h2>Here's a real session output.<br>Client: 14-person marketing consultancy.</h2>
+    <p class="section-sub">
+      We ran Sandy on a real operator's brief: "build me a 30-contact outreach list for
+      B2B SaaS founders in the Midwest who've raised a Series A in the last 18 months."
+      This came out in 22 minutes.
+    </p>
+
+    <div class="output-block">
+      <div class="output-header">
+        <span class="prompt">
+          Sandy → <strong>"Build a 30-contact outreach campaign for B2B SaaS Series A founders, Midwest, personalized by recent signal."</strong>
+        </span>
+        <span class="timer">22 min 14 sec</span>
+      </div>
+
+      <div class="output-leads">
+        <table class="leads-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Company</th>
+              <th>Signal (personalization feed)</th>
+              <th>ICP Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name-cell">Jordan Mercer</td>
+              <td class="co-cell">Fieldsync (Chicago)</td>
+              <td class="sig-cell">Raised $4.2M Series A Jan 2026. LinkedIn post 3 days ago: "hiring our first SDR — we keep getting ghosted." Founder-led sales, no BD team.</td>
+              <td class="score-cell">10</td>
+            </tr>
+            <tr>
+              <td class="name-cell">Priya Nair</td>
+              <td class="co-cell">Stackwell (Minneapolis)</td>
+              <td class="sig-cell">Series A closed Nov 2025. Just posted about "doing outreach at 11pm again." CEO + Head of Sales. Mentioned competitors by name twice in last 90 days of posts.</td>
+              <td class="score-cell">10</td>
+            </tr>
+            <tr>
+              <td class="name-cell">Marcus Cole</td>
+              <td class="co-cell">Trellis Labs (Detroit)</td>
+              <td class="sig-cell">Raised $6.1M Feb 2026. No marketing hire listed on LinkedIn. Founder writes every post himself. Last post: "if you're not doing outbound in 2026 you're leaving money on the table."</td>
+              <td class="score-cell">9</td>
+            </tr>
+            <tr>
+              <td class="name-cell">Alicia Cho</td>
+              <td class="co-cell">Nexway (Columbus)</td>
+              <td class="sig-cell">$3.8M Series A Oct 2025. Active on LinkedIn, 3 posts/week, all about scaling ops with a lean team. Mentioned hiring a marketing coordinator twice — hasn't pulled the trigger.</td>
+              <td class="score-cell">9</td>
+            </tr>
+            <tr>
+              <td style="padding:11px 16px;color:var(--text-xs);font-size:12px;border-bottom:none" colspan="4">
+                + 26 more contacts · full CSV with verified emails, LinkedIn URLs, and custom signals
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="output-email">
+        <div class="email-label">Email 1 of 3 — Jordan Mercer · Fieldsync</div>
+        <div class="email-subject">the SDR hiring problem (Fieldsync)</div>
+        <div class="email-body">
+          <p>Jordan —</p>
+          <p>Saw your post about <span class="hl">getting ghosted while building your first SDR pipeline</span>. That's usually less of a hiring problem and more of a system problem — SDRs without a clear outbound process churn fast and deliver inconsistently.</p>
+          <p>We built Sandbox for exactly the stage Fieldsync is at: <span class="hl">founder-led sales that needs to become a repeatable motion</span> without scaling headcount first. Sandy (our AI exec layer) builds the prospect list, personalizes every touchpoint, loads it into your sequencer, and tracks replies. You stay in the deal, not the tool.</p>
+          <p>Quick proof: this email was built by Sandy on your LinkedIn post from three days ago. The whole 30-contact campaign took 22 minutes.</p>
+          <p>Worth 20 minutes? <span class="hl">cal.com/edgarinvillamar/15min</span></p>
+          <p>— Edgar<br>Sandbox.co</p>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:12px;color:var(--text-xs);margin-top:12px;line-height:1.6">
+      In the demo session, Sandy runs this same workflow on your actual business and ICP — not a pre-built scenario.
+      You leave with a real output you can use that day.
+    </p>
+  </div>
+</div>
+
+<!-- What's included -->
+<div class="section">
+  <div class="wrap">
+    <div class="section-label">The 30-day pilot</div>
+    <h2>What happens after you book.</h2>
+    <p class="section-sub">
+      The demo is free. If it clicks, we offer a 30-day hands-on pilot.
+      Most operators start seeing output in the first session.
+    </p>
+
+    <div class="includes-grid">
+      <div class="include-card">
+        <div class="ic-icon">🗂</div>
+        <div class="ic-title">Your ICP configured in session 1</div>
+        <div class="ic-desc">Sandy learns your target customer in the first 20-minute session. By session 2, it's running campaigns specific to your exact buyers — not a generic template.</div>
+      </div>
+      <div class="include-card">
+        <div class="ic-icon">📨</div>
+        <div class="ic-title">First campaign live within 48 hours</div>
+        <div class="ic-desc">Prospect list built, emails personalized, loaded into Smartlead, and scheduled. You review and approve. First send goes out before the week is over.</div>
+      </div>
+      <div class="include-card">
+        <div class="ic-icon">🔁</div>
+        <div class="ic-title">Weekly sessions throughout the pilot</div>
+        <div class="ic-desc">4 weekly 30-minute check-ins. We review what's working, adjust targeting, rewrite anything underperforming. You don't manage the tool — you manage the output.</div>
+      </div>
+      <div class="include-card">
+        <div class="ic-icon">📊</div>
+        <div class="ic-title">Reply routing and handoff</div>
+        <div class="ic-desc">When a prospect replies, Sandy flags it, identifies intent, and surfaces the booking link or next step. You close the deal — Sandy handles everything upstream.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pricing -->
+<div class="section">
+  <div class="wrap">
+    <div class="section-label">Pricing</div>
+    <h2>Less than a single contractor invoice.</h2>
+    <p class="section-sub">
+      The operators who get the best results from Sandy aren't the ones with the biggest budget.
+      They're the ones who were already doing this work themselves and ran out of hours.
+    </p>
+
+    <div class="pricing-row">
+      <div class="price-card">
+        <div class="pc-label">The alternative</div>
+        <div class="pc-price">$7–14k</div>
+        <div class="pc-per">per month</div>
+        <ul>
+          <li>Part-time BDR: $3–5k/mo</li>
+          <li>Ops coordinator: $2–4k/mo</li>
+          <li>Marketing consultant: $2–5k/mo</li>
+          <li>Still you doing the strategy</li>
+          <li>3–6 months to show ROI</li>
+        </ul>
+      </div>
+      <div class="price-card highlight">
+        <div class="pc-label">Sandy pilot</div>
+        <div class="pc-price">$500</div>
+        <div class="pc-per">per month · 30 days · no contract</div>
+        <ul>
+          <li>Full Sandy setup on your ICP</li>
+          <li>First campaign live in 48 hrs</li>
+          <li>4 working sessions / month</li>
+          <li>Reply routing + booking flow</li>
+          <li>Output in week 1 — or cancel</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <div class="pc-label">Self-serve</div>
+        <div class="pc-price">$49</div>
+        <div class="pc-per">per month · beta price (→ $99)</div>
+        <ul>
+          <li>Full Sandy access</li>
+          <li>Run sessions on your own</li>
+          <li>Good if you want to explore first</li>
+          <li>sandbox-bd758361.pages.dev</li>
+          <li>Locks in at $49 for life</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="price-vs">
+      The pilot is for operators who want a working outreach system, not a new tool to learn.
+      If you'd rather explore Sandy yourself first, the $49/month beta access is at
+      <a href="https://sandbox-bd758361.pages.dev/get-paid">sandbox-bd758361.pages.dev/get-paid</a>.
+    </p>
+  </div>
+</div>
+
+<!-- Who it's for -->
+<div class="section">
+  <div class="wrap">
+    <div class="section-label">Is this for you?</div>
+    <h2>Sandy works for a specific kind of operator.</h2>
+
+    <div class="fit-grid">
+      <div class="fit-card yes">
+        <div class="fc-header">Good fit</div>
+        <ul>
+          <li>5–50 person business you run or own</li>
+          <li>You or a small team doing BD, ops, or outreach</li>
+          <li>You know your ICP — you just don't have the time to build pipeline consistently</li>
+          <li>Marketing consultancy, agency, services firm, advisory practice, B2B operator</li>
+          <li>You've tried cold outreach before but couldn't maintain it</li>
+        </ul>
+      </div>
+      <div class="fit-card no">
+        <div class="fc-header">Not a fit</div>
+        <ul>
+          <li>Pre-revenue, still finding product-market fit</li>
+          <li>Large enterprise team with a dedicated sales ops function</li>
+          <li>Looking for a chatbot or AI writing assistant</li>
+          <li>B2C business or consumer product</li>
+          <li>Want to set it and forget it — Sandy requires a human reviewing output</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Final CTA -->
+<div class="section">
+  <div class="wrap">
+    <div class="cta-block">
+      <h2>Book the 20-minute session.<br>See what Sandy builds for you.</h2>
+      <p>
+        No deck, no slides. Sandy runs a live session on your actual business.
+        You leave with a real output — or you don't pay anything.
+      </p>
+      <a href="https://janis-leclair.github.io/sandbox-demo-booking/" class="cta-primary">
+        Book your session →
+      </a>
+      <div class="cta-note">
+        20 minutes · No deck. No pitch. Sandy runs on your use case.<br>
+        Cal.com booking — pick a time that works for you.
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div>
+    Sandy by Sandbox.co ·
+    <a href="https://sandbox-bd758361.pages.dev">sandbox-bd758361.pages.dev</a> ·
+    <a href="https://sandbox-bd758361.pages.dev/get-paid">Pricing</a>
+  </div>
+  <div style="margin-top:6px">
+    Questions? Reply to the email or book directly above.
+  </div>
+</footer>
+
+</body>
+</html>
