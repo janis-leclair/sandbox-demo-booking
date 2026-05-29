@@ -140,6 +140,19 @@
 
     .disclaimer { font-size: 12px; color: #9CA3AF; text-align: center; margin-top: 14px; line-height: 1.5; }
 
+    .direct-email {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .direct-email a {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .direct-email a:hover { text-decoration: underline; }
+
     /* Success state */
     .success-state {
       display: none;
@@ -238,7 +251,17 @@
 
     <div class="card-body" id="formWrapper">
 
-      <form id="bookingForm" onsubmit="handleBookingSubmit(event)" novalidate>
+      <!-- FormSubmit: server-side POST, works for all email clients including webmail -->
+      <form id="bookingForm"
+            action="https://formsubmit.co/rob@sandboxgtm.com"
+            method="POST">
+
+        <!-- FormSubmit config -->
+        <input type="hidden" name="_next" value="https://janis-leclair.github.io/sandbox-demo-booking/?booked=1" />
+        <input type="hidden" name="_subject" value="Demo Request — Sandbox.co" />
+        <input type="hidden" name="_captcha" value="false" />
+        <input type="hidden" name="_template" value="box" />
+        <input type="hidden" name="_autoresponse" value="Thanks for requesting a Sandbox demo! Rob will confirm your time slot within 2 hours. – The Sandbox Team" />
 
         <div class="row-2">
           <div class="form-group">
@@ -285,10 +308,10 @@
         </button>
 
         <p class="disclaimer">
-          Opens your email app with a pre-filled booking request — hit Send and Rob confirms within 2 hours.
+          Your request goes directly to Rob — he confirms your slot within 2 hours.
         </p>
-        <p style="text-align:center; margin-top:10px; font-size:13px; color:#6B7280;">
-          Prefer to email directly? <a href="mailto:rob@sandboxgtm.com?subject=Demo%20Request%20%E2%80%94%20Sandbox.co" style="color:#2563EB; font-weight:600; text-decoration:none;">rob@sandboxgtm.com</a>
+        <p class="direct-email">
+          Prefer to email directly? <a href="mailto:rob@sandboxgtm.com?subject=Demo%20Request%20%E2%80%94%20Sandbox.co">rob@sandboxgtm.com</a>
         </p>
 
       </form>
@@ -300,13 +323,13 @@
           <polyline points="20,6 9,17 4,12"/>
         </svg>
       </div>
-      <h2>Email opened — just hit Send.</h2>
-      <p>Your email app should have opened with a pre-filled message to Rob. Hit send and he'll confirm your time slot within 2 hours.</p>
+      <h2>Request sent — you're on Rob's radar.</h2>
+      <p>Your demo request went through. Rob will reply to confirm your time slot within 2 hours during business hours.</p>
       <div class="success-note">
         📅 Once confirmed, you'll get a Google Calendar invite. The call is 20 minutes — live product, no deck, no hard sell.
       </div>
       <p class="success-fallback">
-        Email app didn't open? Write directly to <a href="mailto:rob@sandboxgtm.com?subject=Demo%20Request%20%E2%80%94%20Sandbox.co">rob@sandboxgtm.com</a>
+        Didn't get a reply? Email directly: <a href="mailto:rob@sandboxgtm.com?subject=Demo%20Request%20%E2%80%94%20Sandbox.co">rob@sandboxgtm.com</a>
       </p>
     </div>
 
@@ -323,61 +346,7 @@
 </main>
 
 <script>
-  function handleBookingSubmit(e) {
-    e.preventDefault();
-
-    var firstName = (document.getElementById('firstName').value || '').trim();
-    var lastName  = (document.getElementById('lastName').value  || '').trim();
-    var email     = (document.getElementById('email').value     || '').trim();
-    var company   = (document.getElementById('company').value   || '').trim();
-    var timeSlot  = (document.getElementById('timeSlot').value  || '').trim();
-    var context   = (document.getElementById('context').value   || '').trim();
-
-    // Client-side required field check
-    if (!firstName || !email || !company || !timeSlot) {
-      var missing = [];
-      if (!firstName) missing.push('First name');
-      if (!email)     missing.push('Work email');
-      if (!company)   missing.push('Company name');
-      if (!timeSlot)  missing.push('Preferred time');
-      alert('Please fill in: ' + missing.join(', '));
-      return;
-    }
-
-    var fullName = lastName ? firstName + ' ' + lastName : firstName;
-
-    var bodyLines = [
-      'Hi Rob,',
-      '',
-      "I'd like to book a 20-minute Sandbox demo.",
-      '',
-      'Name: ' + fullName,
-      'Company: ' + company,
-      'Email: ' + email,
-      'Preferred time: ' + timeSlot,
-    ];
-    if (context) {
-      bodyLines.push('');
-      bodyLines.push('Notes: ' + context);
-    }
-    bodyLines.push('');
-    bodyLines.push('Thanks');
-
-    var subject = encodeURIComponent('Demo Request — Sandbox.co');
-    var body    = encodeURIComponent(bodyLines.join('\n'));
-
-    // Open email client with pre-filled request
-    window.location.href = 'mailto:rob@sandboxgtm.com?subject=' + subject + '&body=' + body;
-
-    // Show success UI after a brief delay (email client opens in parallel)
-    setTimeout(function() {
-      document.getElementById('formWrapper').style.display = 'none';
-      document.getElementById('proofBar').style.display = 'none';
-      document.getElementById('successState').style.display = 'block';
-    }, 600);
-  }
-
-  // Show success state if URL has ?booked=1 (legacy redirect support)
+  // Show success state if URL has ?booked=1 (redirect from FormSubmit)
   (function() {
     if (window.location.search.indexOf('booked=1') !== -1) {
       document.getElementById('formWrapper').style.display = 'none';
