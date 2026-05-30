@@ -168,7 +168,7 @@
     }
     .success-icon svg { color: var(--success); }
     .success-state h2 { font-size: 22px; font-weight: 700; color: var(--brand); margin-bottom: 10px; letter-spacing: -0.02em; }
-    .success-state p { font-size: 15px; color: var(--muted); line-height: 1.6; max-width: 360px; margin: 0 auto; }
+    .success-state > p { font-size: 15px; color: var(--muted); line-height: 1.6; max-width: 360px; margin: 0 auto; }
     .success-note {
       margin-top: 24px;
       background: #F0FDF4;
@@ -180,12 +180,48 @@
       font-weight: 500;
       text-align: left;
     }
-    .success-fallback {
-      margin-top: 16px;
+    .success-fallback-section {
+      margin-top: 24px;
+      padding: 18px 20px;
+      background: #F9FAFB;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      text-align: left;
+    }
+    .success-fallback-section h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 10px;
+    }
+    .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      font-family: inherit;
+    }
+    .copy-btn:hover { background: #F3F4F6; border-color: #D1D5DB; }
+    .copy-btn.copied { background: #D1FAE5; border-color: #6EE7B7; color: #065F46; }
+    .fallback-email {
+      margin-top: 10px;
       font-size: 13px;
       color: var(--muted);
     }
-    .success-fallback a { color: var(--accent); text-decoration: underline; }
+    .fallback-email a {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .fallback-email a:hover { text-decoration: underline; }
 
     /* Footer proof bar */
     .proof-bar {
@@ -216,6 +252,7 @@
       .card-header h1 { font-size: 22px; }
       .row-2 { grid-template-columns: 1fr; }
       .proof-bar { padding: 14px 24px; }
+      .success-state { padding: 40px 24px; }
     }
   </style>
 </head>
@@ -251,17 +288,8 @@
 
     <div class="card-body" id="formWrapper">
 
-      <!-- FormSubmit: server-side POST, works for all email clients including webmail -->
-      <form id="bookingForm"
-            action="https://formsubmit.co/rob@sandboxgtm.com"
-            method="POST">
-
-        <!-- FormSubmit config -->
-        <input type="hidden" name="_next" value="https://janis-leclair.github.io/sandbox-demo-booking/?booked=1" />
-        <input type="hidden" name="_subject" value="Demo Request — Sandbox.co" />
-        <input type="hidden" name="_captcha" value="false" />
-        <input type="hidden" name="_template" value="box" />
-        <input type="hidden" name="_autoresponse" value="Thanks for requesting a Sandbox demo! Rob will confirm your time slot within 2 hours. – The Sandbox Team" />
+      <!-- JS-handled form — opens pre-filled email in default mail client, no server dependency -->
+      <form id="bookingForm">
 
         <div class="row-2">
           <div class="form-group">
@@ -294,6 +322,9 @@
             <option value="Tuesday June 10 at 10am PT">Tuesday June 10 at 10am PT</option>
             <option value="Wednesday June 11 at 2pm PT">Wednesday June 11 at 2pm PT</option>
             <option value="Thursday June 12 at 11am PT">Thursday June 12 at 11am PT</option>
+            <option value="Tuesday June 17 at 10am PT">Tuesday June 17 at 10am PT</option>
+            <option value="Wednesday June 18 at 2pm PT">Wednesday June 18 at 2pm PT</option>
+            <option value="Thursday June 19 at 11am PT">Thursday June 19 at 11am PT</option>
             <option value="Flexible — send me your best time">Flexible — send me your best time</option>
           </select>
         </div>
@@ -308,7 +339,7 @@
         </button>
 
         <p class="disclaimer">
-          Your request goes directly to Rob — he confirms your slot within 2 hours.
+          Your request opens directly in your email app — just hit Send. Rob confirms within 2 hours.
         </p>
         <p class="direct-email">
           Prefer to email directly? <a href="mailto:rob@sandboxgtm.com?subject=Demo%20Request%20%E2%80%94%20Sandbox.co">rob@sandboxgtm.com</a>
@@ -323,14 +354,21 @@
           <polyline points="20,6 9,17 4,12"/>
         </svg>
       </div>
-      <h2>Request sent — you're on Rob's radar.</h2>
-      <p>Your demo request went through. Rob will reply to confirm your time slot within 2 hours during business hours.</p>
+      <h2>Almost there — just hit Send!</h2>
+      <p>Your booking request is pre-filled in your email app. Hit Send to confirm — Rob will reply with a calendar invite within 2 hours.</p>
       <div class="success-note">
-        📅 Once confirmed, you'll get a Google Calendar invite. The call is 20 minutes — live product, no deck, no hard sell.
+        📅 Once confirmed, you'll get a Google Calendar invite with a Meet link. The call is 20 minutes — live product, no deck, no hard sell.
       </div>
-      <p class="success-fallback">
-        Didn't get a reply? Email directly: <a href="mailto:rob@sandboxgtm.com?subject=Demo%20Request%20%E2%80%94%20Sandbox.co">rob@sandboxgtm.com</a>
-      </p>
+      <div class="success-fallback-section" id="fallbackSection">
+        <h3>Email app didn't open?</h3>
+        <button class="copy-btn" id="copyBtn" onclick="copyRequest()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy my booking request
+        </button>
+        <div class="fallback-email">
+          Then paste it in a new email to <a href="mailto:rob@sandboxgtm.com?subject=Demo%20Request%20%E2%80%94%20Sandbox.co">rob@sandboxgtm.com</a>
+        </div>
+      </div>
     </div>
 
     <div class="proof-bar" id="proofBar">
@@ -346,14 +384,81 @@
 </main>
 
 <script>
-  // Show success state if URL has ?booked=1 (redirect from FormSubmit)
-  (function() {
-    if (window.location.search.indexOf('booked=1') !== -1) {
+  var _bookingText = '';
+
+  document.getElementById('bookingForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    var fn  = document.getElementById('firstName').value.trim();
+    var ln  = document.getElementById('lastName').value.trim();
+    var em  = document.getElementById('email').value.trim();
+    var co  = document.getElementById('company').value.trim();
+    var ts  = document.getElementById('timeSlot').value;
+    var ctx = document.getElementById('context').value.trim();
+
+    var name = fn + (ln ? ' ' + ln : '');
+
+    var bodyLines = [
+      'Hi Rob,',
+      '',
+      "I'd like to book a Sandbox demo.",
+      '',
+      'Name: ' + name,
+      'Email: ' + em,
+      'Company: ' + co,
+      'Preferred time: ' + ts
+    ];
+    if (ctx) bodyLines.push('Notes: ' + ctx);
+    bodyLines.push('', 'Looking forward to it!');
+
+    var body = bodyLines.join('\n');
+    _bookingText = 'To: rob@sandboxgtm.com\nSubject: Demo Request — Sandbox.co\n\n' + body;
+
+    var subject = encodeURIComponent('Demo Request — Sandbox.co');
+    var encodedBody = encodeURIComponent(body);
+    var mailtoUrl = 'mailto:rob@sandboxgtm.com?subject=' + subject + '&body=' + encodedBody;
+
+    // Open email client — use window.location for best browser compatibility
+    window.location.href = mailtoUrl;
+
+    // Show success state after short delay (mailto doesn't navigate away)
+    setTimeout(function() {
       document.getElementById('formWrapper').style.display = 'none';
       document.getElementById('proofBar').style.display = 'none';
       document.getElementById('successState').style.display = 'block';
+    }, 500);
+  });
+
+  function copyRequest() {
+    var btn = document.getElementById('copyBtn');
+    if (navigator.clipboard && _bookingText) {
+      navigator.clipboard.writeText(_bookingText).then(function() {
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg> Copied!';
+        btn.classList.add('copied');
+      }).catch(function() {
+        fallbackCopy(btn);
+      });
+    } else {
+      fallbackCopy(btn);
     }
-  })();
+  }
+
+  function fallbackCopy(btn) {
+    var ta = document.createElement('textarea');
+    ta.value = _bookingText;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg> Copied!';
+      btn.classList.add('copied');
+    } catch(err) {
+      btn.textContent = 'rob@sandboxgtm.com';
+    }
+    document.body.removeChild(ta);
+  }
 </script>
 
 </body>
